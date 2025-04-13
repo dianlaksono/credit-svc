@@ -22,9 +22,10 @@ Aplikasi ini dapat digunakan untuk menghitung simulasi cicilan bulanan untuk pin
 
 ## Cara Menggunakan Aplikasi (tanpa input file)
 - Setelah aplikasi berjalan, Anda akan melihat menu dengan opsi berikut:
-    1. Hitung simulasi pinjaman
-    2. Lihat daftar riwayat perhitungan pinjaman
-    3. Keluar
+  1. Hitung simulasi pinjaman
+  2. Hitung simulasi pinjaman dari web service (https://run.mocky.io/v3/1c15a428-2a0f-4ec9-b4c3-925698a33d08)
+  3. Lihat daftar riwayat perhitungan pinjaman 
+  4. Keluar
 - Pilih opsi yang diinginkan dengan memasukkan nomor yang sesuai.
 - Untuk menghitung cicilan, masukkan informasi sesuai permintaan.
 - Setelah menghitung cicilan, Anda dapat menyimpan data pinjaman ke dalam sheet dengan memberikan nama sheet.

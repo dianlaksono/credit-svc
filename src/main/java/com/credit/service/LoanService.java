@@ -7,8 +7,12 @@ import com.credit.model.LoanCalculationDetail;
 import com.credit.model.LoanHistory;
 import com.credit.view.ConsoleView;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.*;
 
 import static com.credit.helper.Constants.*;
@@ -19,6 +23,7 @@ public class LoanService {
     private Util util;
     private Map<Integer, LoanHistory> loanHistoryMap;
     private int sheetNumber;
+    private String jsonUrl;
 
     public LoanService() {
         this.scanner = new Scanner(System.in);
@@ -26,6 +31,7 @@ public class LoanService {
         this.util = new Util();
         this.loanHistoryMap = new HashMap<>();
         this.sheetNumber = 1;
+        this.jsonUrl = "https://run.mocky.io/v3/1c15a428-2a0f-4ec9-b4c3-925698a33d08";
     }
 
     public void executeLoanSimulation(String[] args) {
@@ -69,9 +75,12 @@ public class LoanService {
                         calculateLoan();
                         break;
                     case 2:
-                        getListLoanCalulationHistoryData(loanHistoryMap);
+                        calculateLoanFromWebService();
                         break;
                     case 3:
+                        getListLoanCalulationHistoryData(loanHistoryMap);
+                        break;
+                    case 4:
                         System.out.println("Terima kasih telah menggunkan aplikasi kami :D");
                         return;
                     default:
@@ -178,6 +187,79 @@ public class LoanService {
         }
 
         return true;
+    }
+
+    public void calculateLoanFromWebService(){
+        try {
+            String jsonResponse = fetchJsonData(jsonUrl);
+            Loan loan = parseJsonValuetoLoanModel(jsonResponse);
+
+            LoanCalculation loanCalculation = calculateMonthlyInstallmentAndInterestRate(loan);
+
+            Boolean isSaved = view.getConfirmationSaveLoanCalculationHistory();
+            if (isSaved){
+                String sheetName = view.getSheetLoanHistory();
+                saveLoanCalculationHistory(loanCalculation, sheetName);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String fetchJsonData(String urlString) throws Exception {
+        StringBuilder result = new StringBuilder();
+
+        URL url = new URL(urlString);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                result.append(line);
+            }
+        }
+        return result.toString();
+    }
+
+    private Loan parseJsonValuetoLoanModel(String jsonString) {
+        String vehicleType = "";
+        String vehicleCondition = "";
+        int vehicleYear = 0;
+        long totalLoanAmt = 0;
+        int tenor = 0;
+        long downPaymentAmt = 0;
+
+        jsonString = jsonString.substring(1, jsonString.length() - 1);
+        String[] keyValuePairs = jsonString.split(",");
+        for (String pair : keyValuePairs) {
+            String[] keyValue = pair.split(":");
+            String key = keyValue[0].trim().replace("\"", "");
+            String value = keyValue[1].trim().replace("\"", "");
+
+            switch (key) {
+                case "vehicleType":
+                    vehicleType = value;
+                    break;
+                case "vehicleCondition":
+                    vehicleCondition = value;
+                    break;
+                case "vehicleYear":
+                    vehicleYear = Integer.parseInt(value);
+                    break;
+                case "totalLoanAmt":
+                    totalLoanAmt = Long.parseLong(value);
+                    break;
+                case "tenor":
+                    tenor = Integer.parseInt(value);
+                    break;
+                case "downPaymentAmt":
+                    downPaymentAmt = Long.parseLong(value);
+                    break;
+            }
+        }
+
+        return new Loan(vehicleType, vehicleCondition, vehicleYear, totalLoanAmt, tenor, downPaymentAmt);
     }
 
     private void saveLoanCalculationHistory(LoanCalculation loanCalculation, String sheetName) {

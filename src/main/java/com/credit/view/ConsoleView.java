@@ -16,8 +16,9 @@ public class ConsoleView {
     public void displayMenu() {
         System.out.println("Menu :");
         System.out.println("1. Hitung simulasi pinjaman");
-        System.out.println("2. Lihat daftar riwayat perhitungan pinjaman");
-        System.out.println("3. Keluar");
+        System.out.println("2. Hitung simulasi pinjaman dari web service");
+        System.out.println("3. Lihat daftar riwayat perhitungan pinjaman");
+        System.out.println("4. Keluar");
         System.out.print("Masukkan pilihan : ");
     }
 
